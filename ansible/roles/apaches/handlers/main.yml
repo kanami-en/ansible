@@ -1,0 +1,5 @@
+#httpdを再起動する
+- name: restart httpd
+  service: 
+    name: httpd
+    state: restarted

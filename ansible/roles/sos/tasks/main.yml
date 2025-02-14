@@ -1,0 +1,7 @@
+# sosパッケージをインストール
+- name: sosパッケージをインストール
+  ansible.builtin.dnf:
+    name: sos
+    state: present
+  tags: sos
+  become: yes

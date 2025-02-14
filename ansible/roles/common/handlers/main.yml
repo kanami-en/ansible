@@ -1,0 +1,11 @@
+#sshdの再起動
+- name: sshdの再起動
+  service:
+    name: sshd
+    state: restarted
+
+#GRUBアップデート
+- name: GRUBアップデート
+  command: grub2-mkconfig -o /boot/grub2/grub.cfg 
+
+

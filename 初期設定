@@ -1,0 +1,30 @@
+#ユーザーを作成
+useradd -s /bin/bash -m ansible
+passwd ansible
+Ansible123!
+
+#sudo権限をユーザーへ付与
+echo "ansible ALL=(ALL) NOPASSWD:ALL" | tee \ -a /etc/sudoers.d/ansible
+
+#作成したユーザーでログイン
+sudo - ansible
+
+sudo cat /etc/sudoers.d/ansible
+
+#公開鍵と秘密鍵のペアを作成
+[ansible@ansible ~]ssh-keygen
+
+ls ~/.ssh
+
+ssh-copy-id -i ~/.ssh/id_rsa.pub localhost
+
+ssh-copy-id -i ~/.ssh/id_rsa.pub 118.27.118.109
+
+ls ~/.ssh
+
+ssh 118.27.115.165 echo test
+
+useradd -s /bin/bash -m ansible
+
+
+

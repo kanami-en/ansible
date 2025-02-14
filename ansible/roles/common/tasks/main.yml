@@ -1,0 +1,88 @@
+---
+# This playbook contains common plays that will be run on all nodes.
+#変数のパラメータは/group_vars/*.ymlを参照
+
+#サービス有効化設定 
+- name: サービス有効化
+  systemd:
+    name: "{{ item }}"
+    state: started
+    enabled: yes
+  loop: "{{ enabled_service_list | default([], true) }}"
+  changed_when: false
+
+#サービス暗号化設定 
+- name: サービス暗号化
+  systemd:
+    name: "{{ item }}"
+    state: stopped
+    enabled: no
+    masked: yes
+  loop: "{{ masked_service_list | default([], true) }}"
+  changed_when: true
+
+#timezone設定
+- name: timezoneを設定する
+  timezone:
+    name: "{{ local_timezone }}"
+
+#Japanese localeをインストール
+- name: Japanese localeをインストール
+  package:
+    name: glibc-langpack-ja
+    state: present
+
+# localeを設定
+- name: localeを設定
+  shell: localectl set-locale LANG={{ local_locale }}
+  changed_when: false
+  tags: ansible
+ 
+#keymapをjp106に変更
+- name: keymapをjp106に変更
+  become: yes
+  become_user: root
+  shell: localectl set-keymap jp106
+
+#SELinux無効設定
+- name: SELinuxを無効にする
+  selinux:
+    state: disabled
+ 
+# 指定したEthernetのmethod6設定を変更
+- name: 指定したEthernetのmethod6設定を変更
+  community.general.nmcli:
+    conn_name: "{{ iif }}"
+    type: ethernet  
+    method6: ignore
+    state: present
+  become: yes
+
+# /etc/ssh/sshd_configの変更
+- name: /etc/ssh/sshd_configの変更
+  lineinfile:
+    path: '/etc/ssh/sshd_config'
+    state: present
+    backrefs: yes
+    regexp: '{{ item.regexp }}'
+    line: '{{ item.line }}'
+  loop: "{{ sshd_config_settings }}"
+  notify: sshdの再起動
+
+#/etc/default/grubの変更
+- name: /etc/default/grubの変更
+  lineinfile:
+    dest: '/etc/default/grub'
+    state: present
+    backrefs: yes
+    regexp: '{{ item.regexp }}'
+    line: '{{ item.line }}'
+  loop: "{{ grub_settings }}"
+  notify: GRUBアップデート
+
+#その他パッケージインストール
+- name: 必要なパッケージをインストール
+  ansible.builtin.package:
+    name: "{{ item }}"
+    state: present
+  loop: "{{ install_packages_list }}"

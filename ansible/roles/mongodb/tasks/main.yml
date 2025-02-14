@@ -1,0 +1,46 @@
+# # MongoDB 3.6 リポジトリを追加
+# - name: MongoDB 3.6 リポジトリを追加する
+#   yum_repository:
+#     name: mongodb-org-3.6
+#     description: MongoDB リポジトリ
+#     baseurl: https://repo.mongodb.org/yum/redhat/$releasever/mongodb-org/3.6/x86_64/
+#     gpgcheck: yes
+#     gpgkey: https://www.mongodb.org/static/pgp/server-3.6.asc
+#     enabled: yes
+
+# # MongoDB 3.6 パッケージをインストール
+# - name: MongoDB 3.6 パッケージをインストールする
+#   yum:
+#     name: mongodb-org
+#     state: present
+
+# # MongoDB サービスが再起動されることを確認
+# - name: MongoDB サービスが再起動されることを確認する
+#   ansible.builtin.service:
+#     name: mongod
+#     state: restarted
+#   notify: restart mongodb
+
+# MongoDB 3.6 リポジトリを追加
+- name: MongoDB 3.6 リポジトリを追加する
+  ansible.builtin.dnf:
+    name: https://repo.mongodb.org/yum/redhat/$releasever/mongodb-org/3.6/x86_64/RPMS/mongodb-org-3.6.repo
+    state: present
+  become: yes
+
+# MongoDB 3.6 パッケージをインストール
+- name: MongoDB 3.6 パッケージをインストールする
+  ansible.builtin.dnf:
+    name: mongodb-org
+    state: present
+  become: yes
+
+# MongoDB サービスが再起動されることを確認
+- name: MongoDB サービスが再起動されることを確認する
+  ansible.builtin.service:
+    name: MongoDB再起動
+    state: restarted
+  notify: restart mongodb
+  become: yes
+
+

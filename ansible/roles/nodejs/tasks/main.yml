@@ -1,0 +1,16 @@
+# Node.jsをリセットする
+- name: Node.jsをリセットする
+  shell: sudo dnf module -y reset nodejs
+
+# Node.jsバージョン12をインストールする
+- name: Node.jsバージョン12をインストールする
+  shell: sudo dnf module -y install nodejs:12
+
+# Node.jsのバージョンを確認する
+- name: Node.jsのバージョンを確認する
+  command: node --version
+  register: node_version
+
+# デバッグ: Node.jsのバージョンを表示する
+- debug:
+    msg: "Node.jsのバージョンは {{ node_version.stdout }} です。"

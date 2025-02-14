@@ -1,0 +1,50 @@
+
+- name: remiリポジトリを無効にする
+  ini_file:
+    path: /etc/yum.repos.d/remi.repo
+    section: remi
+    option: enabled
+    value: '0'
+  when: ansible_os_family == "RedHat" and ansible_distribution != "Amazon"
+  ignore_errors: yes
+
+- name: EPELリポジトリを有効にする
+  dnf:
+    name: epel-release
+    state: present
+
+# ClamAVとclamav-updateをインストールする
+- name: ClamAVとclamav-updateをインストールする
+  yum:
+    name:
+      - clamav
+      - clamav-update
+    state: present
+
+# ClamAVのバージョンを確認する
+- name: ClamAVのバージョンを確認する
+  command: sigtool --version
+  register: clamav_version
+  ignore_errors: yes
+
+# ClamAVの定義ファイルを更新する
+- name: ClamAVの定義ファイルを更新する
+  command: freshclam
+  register: freshclam_output
+  ignore_errors: yes
+
+# freshclamの出力を表示する
+- name: freshclamの出力を表示する
+  debug:
+    msg: "freshclamの出力: {{ freshclam_output.stdout }}"
+
+# ClamAVの定義ファイルを一覧表示する
+- name: ClamAVの定義ファイルを一覧表示する
+  command: ls -l /var/lib/clamav/
+  register: clamav_files
+  ignore_errors: yes
+
+# ClamAVの定義ファイルを表示する
+- name: ClamAVの定義ファイルを表示する
+  debug:
+    msg: "ClamAVの定義ファイル: {{ clamav_files.stdout }}"

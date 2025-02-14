@@ -1,0 +1,112 @@
+#事前に管理サーバで以下のユーザーに対して鍵ペアを作成する
+# ユーザーCTのための鍵ペアを作成
+#ssh-keygen -t rsa -b 2048 -C CT -f ~/.ssh/id_rsa_CT
+#chmod 600 ~/.ssh/id_rsa_CT
+
+# ユーザーaicanadminのための鍵ペアを作成
+#ssh-keygen -t rsa -b 2048 -C aicanadmin -f ~/.ssh/id_rsa_aicanadmin
+#chmod 600 ~/.ssh/id_rsa_aicanadmin
+
+
+# rootのパスワードを変更する
+- name: rootのパスワードを変更する
+  user:
+    name: "{{ root[0].name }}"
+    password: "{{ root[0].password | password_hash('sha256') }}"
+  become: yes
+
+# 新しいrootのパスワードを設定する
+- name: 新しいrootのパスワードを設定する
+  set_fact:
+    ansible_become_pass: "{{ root[0].password }}"
+
+#オーナーユーザーのgroupsを変更
+- name: "{{ owner[0].name }}"
+  ansible.builtin.user:
+    name: "{{ owner[0].name }}"
+    groups: "{{ owner[0].groups }}"
+    append: yes 
+  become: yes
+
+#オーナーユーザーのパスワードを変更
+- name: "{{ owner[0].name }}ユーザーのパスワードを変更"
+  ansible.builtin.user:
+    name: "{{ owner[0].name }}"
+    password: "{{ owner[0].password | password_hash('sha256') }}"
+  become: yes
+
+# グループを登録
+- name: グループを登録
+  group:
+    name: "{{ item['name'] }}"
+    gid: "{{ item.gid }}"
+    state: "{{ item.state }}"
+  with_items:
+    - "{{ group }}"
+  become: yes
+
+# ユーザーを登録
+- name: ユーザーを登録
+  user:
+    name: "{{ item['user'] }}"
+    uid: "{{ item.uid }}"
+    group: "{{ item['group'] }}"
+    password: "{{ item.password | password_hash('sha256') }}"
+    state: present
+  loop: "{{ accounts }}"
+  become: yes
+
+# 鍵ファイル保存用のディレクトリを作成
+- name: 鍵ファイル保存用のディレクトリを作成
+  ansible.builtin.file:
+    path: "/home/{{ item.user }}/.ssh"
+    state: directory
+    mode: "0700"
+    owner: "{{ item.user }}"
+    group: "{{ item.group }}"
+  loop: "{{ accounts }}"
+  become: yes
+
+# SSH鍵ペアをクライアントサーバーにコピー
+- name: SSH鍵ペアをクライアントサーバーにコピー
+  ansible.builtin.copy:
+    src: "/home/comsysadmin/.ssh/id_rsa_{{ item.user }}"
+    dest: "/home/{{ item.user }}/.ssh/id_rsa"
+    owner: "{{ item.user }}"
+    group: "{{ item.group }}"
+    mode: "0600"
+  loop: "{{ keypair_users }}"
+  become: yes
+  become_user: root
+
+# SSH鍵をauthorized_keysに追加
+- name: SSH鍵をauthorized_keysに追加
+  ansible.builtin.copy:
+    src: "/home/comsysadmin/.ssh/id_rsa_{{ item.user }}.pub"
+    dest: "/home/{{ item.user }}/.ssh/authorized_keys"
+    owner: "{{ item.user }}"
+    group: "{{ item.group }}"
+    mode: "0600"
+  loop: "{{ keypair_users }}"
+  become: yes
+  become_user: root
+
+# グループwheelに所属するユーザーにsudo権限を付与
+- name: グループwheel所属のユーザーにsudo権限を付与
+  ansible.builtin.template:
+    src: sudoers.j2
+    dest: "/etc/sudoers.d/{{ item['user'] }}"
+    mode: 0644
+    owner: root
+    group: root
+  loop: "{{ accounts }}"
+  when: item['groups'] == "wheel"
+  become: yes
+
+# PS1環境変数を設定する
+- name: PS1環境変数を設定する
+  ansible.builtin.lineinfile:
+    path: ~/.bashrc
+    line: 'export PS1="\u@\h:\w\$ "'
+    insertafter: EOF
+  become: yes

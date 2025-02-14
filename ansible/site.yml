@@ -1,0 +1,73 @@
+
+- name: 認証サーバに対してロールを適用
+  hosts: auth_servers
+  become: yes
+  roles: 
+    # - users
+    - apaches
+    # - chrony
+    # - nfs
+    # - SOS
+    # - mysql
+    # - php
+    # - ffmpeg
+    # - nodejs
+    # - mongodb
+    # - mecab
+    # - clamav
+    # - common
+  vars_files:
+    - /home/comsysadmin/ansible/group_vars/all.yml
+    - /home/comsysadmin/ansible/group_vars/auth-01.yml
+
+
+# - name: 連携用サーバに対してロールを適用
+#   hosts: link_servers
+#   become: yes
+#   roles: 
+#     - users
+#     - chrony
+#     - nfs   
+#     - SOS
+#     - clamav
+#     - common
+#   vars_files:
+#     - /home/comsysadmin/ansible/group_vars/all.yml
+#     - /home/comsysadmin/ansible/group_vars/link-01.yml
+
+
+# - name: リスク計算サーバに対してロールを適用
+#   hosts: calc_servers
+#   become: yes
+#   roles: 
+#     - users
+#     - chrony
+#     - nfs
+#     - R
+#     - SOS
+#     - mongodb
+#     - mecab
+#     - clamav
+#     - common
+#   vars_files:
+#     - /home/comsysadmin/ansible/group_vars/all.yml
+#     - /home/comsysadmin/ansible/group_vars/riskcalc-01.yml
+
+  
+# - name: ログ収集サーバに対してロールを適用
+#   hosts: calc_servers
+#   become: yes
+#   roles: 
+#     - users
+#     - chrony
+#     - nfs
+#     - R
+#     - SOS
+#     - clamav
+#     - common
+#   vars_files:
+#     - /home/comsysadmin/ansible/group_vars/all.yml
+#     - /home/comsysadmin/ansible/group_vars/log-01.yml
+
+
+

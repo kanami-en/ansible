@@ -1,0 +1,36 @@
+# EPELリポジトリをインストール
+- name: EPELリポジトリをインストール
+  dnf:
+    name: https://download.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
+    state: present
+
+# yum-utilsをインストール
+- name: yum-utilsをインストール
+  dnf:
+    name: yum-utils
+    state: present
+
+# PowerToolsリポジトリをdnf config-managerを使用して有効化
+- name: PowerToolsリポジトリをdnf config-managerを使用して有効化
+  become: yes
+  command: dnf config-manager --set-enabled powertools
+
+# RPM Fusion freeリポジトリをインストール
+- name: RPM Fusion freeリポジトリをインストール
+  dnf:
+    name: https://mirrors.rpmfusion.org/free/el/rpmfusion-free-release-8.noarch.rpm
+    state: present
+    disable_gpg_check: yes
+
+# RPM Fusion nonfreeリポジトリをインストール
+- name: RPM Fusion nonfreeリポジトリをインストール
+  dnf:
+    name: https://mirrors.rpmfusion.org/nonfree/el/rpmfusion-nonfree-release-8.noarch.rpm
+    state: present
+    disable_gpg_check: yes
+
+# FFmpegとFFmpeg開発パッケージをインストール
+- name: FFmpegとFFmpeg開発パッケージをインストール
+  dnf:
+    name: [ffmpeg, ffmpeg-devel]
+    state: present

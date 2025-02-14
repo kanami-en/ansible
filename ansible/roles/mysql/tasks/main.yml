@@ -1,0 +1,79 @@
+# wgetがインストールされていることを確認
+- name: wgetがインストールされていることを確認
+  dnf:
+    name: wget
+    state: present
+  become: yes
+
+# MySQLの依存関係のためにncurses-compat-libsがインストールされていることを確認
+- name: MySQLの依存関係のためにncurses-compat-libsがインストールされていることを確認
+  dnf:
+    name: ncurses-compat-libs
+    state: present
+  become: yes
+
+# wgetを使用してMySQL 5.7バンドルをダウンロード
+- name: wgetを使用してMySQL 5.7バンドルをダウンロード
+  command: wget https://dev.mysql.com/get/Downloads/MySQL-5.7/mysql-5.7.44-1.el7.x86_64.rpm-bundle.tar -O /home/comsysadmin/mysql-5.7.44-1.el7.x86_64.rpm-bundle.tar
+  args:
+    creates: /home/comsysadmin/mysql-5.7.44-1.el7.x86_64.rpm-bundle.tar
+  become: yes
+
+# MySQL 5.7バンドルを展開
+- name: MySQL 5.7バンドルを展開
+  ansible.builtin.unarchive:
+    src: /home/comsysadmin/mysql-5.7.44-1.el7.x86_64.rpm-bundle.tar
+    dest: /home/comsysadmin/
+    remote_src: yes
+  become: yes
+
+# MySQLのGPGキーをダウンロード
+- name: MySQLのGPGキーをダウンロード
+  get_url:
+    url: https://repo.mysql.com/RPM-GPG-KEY-mysql
+    dest: /etc/pki/rpm-gpg/RPM-GPG-KEY-mysql
+  become: yes
+
+# rpmを使用してMySQLのGPGキーをインポート
+- name: rpmを使用してMySQLのGPGキーをインポート
+  command: rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-mysql
+  become: yes
+
+# MySQLのGPGキーのインポートを確認
+- name: MySQLのGPGキーのインポートを確認
+  command: rpm -qa gpg-pubkey | grep -i mysql
+  register: gpg_keys_mysql
+  become: yes
+
+# dnfを使用してMySQLコミュニティ共通パッケージをインストール
+- name: MySQLコミュニティ共通パッケージをdnf localinstallでインストール
+  command: dnf localinstall -y /home/comsysadmin/mysql-community-common-5.7.44-1.el7.x86_64.rpm
+  become: yes
+
+# dnfを使用してMySQLコミュニティライブラリパッケージをインストール
+- name: dnfを使用してMySQLコミュニティライブラリパッケージをインストール
+  command: dnf localinstall -y /home/comsysadmin/mysql-community-libs-5.7.44-1.el7.x86_64.rpm
+  become: yes
+
+# dnfを使用してMySQLコミュニティクライアントパッケージをインストール
+- name: dnfを使用してMySQLコミュニティクライアントパッケージをインストール
+  command: dnf localinstall -y /home/comsysadmin/mysql-community-client-5.7.44-1.el7.x86_64.rpm
+  become: yes
+
+# MySQLクライアントのインストールを確認
+- name: MySQLクライアントのインストールを確認
+  command: mysql --version
+  register: mysql_version
+  ignore_errors: yes
+  become: yes
+
+# MySQLクライアントのインストールを確認
+- name: MySQLクライアントのインストールを確認
+  fail:
+    msg: "MySQLクライアントがインストールされていないか、正しく機能していません。"
+  when: mysql_version is failed
+
+# MySQLクライアントのバージョンを表示
+- name: MySQLクライアントのバージョンを表示
+  debug:
+    msg: "MySQLクライアントのバージョンは {{ mysql_version.stdout }} です。"

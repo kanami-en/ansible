@@ -1,0 +1,72 @@
+---
+#ユーザー設定
+root:
+  - name: root
+    password: FeqGiSp9BKeF
+
+owner:
+  - name: 'comsysadmin'
+    groups: 'wheel'
+    password: 'LRCnGp2jrBpA'
+
+group:
+  - { name: "CT", gid: 1004, state: "present" }
+  - { name: "aicanadmin", gid: 1105, state: "present" }
+
+accounts:
+  - { user: 'CT', group: CT , groups: 'wheel', password: "{{ 'D6xCkN3HxTFR' }}" ,uid: '1004'}
+  - { user: 'aicanadmin', group: aicanadmin , groups: 'wheel', password: "{{ 'ugkGUquhfEsM' }}" ,uid: '1005'}
+
+keypair_users:
+  - { user: 'CT', group: 'CT' }
+  - { user: 'aicanadmin', group: 'aicanadmin' }
+
+#マスク化するサービスリスト
+masked_service_list:
+  - firewalld
+
+#無効化するサービスリスト
+disabled_service_list:
+  - firewalld
+  - nfs-server
+
+#有効化するサービスリスト
+enable_service_list:
+  - chronyd
+  - sshd
+  - kdump
+  
+#インストールするパッケージリスト
+install_packages_list:
+  - bind-utils
+  - nfs-utils
+  - net-tools
+  - kexec-tools
+
+#sosインストールに必要なパッケージリスト
+install_sos_list:
+  - python3-chardet
+  - python3-ptyprocess
+  - python3-requests
+  - python36-idna
+  - python36-pysocks
+  - python36-six
+  - python36-urllib3
+
+#/etc/default/grub設定
+grub_settings:
+  - regexp: '^GRUB_CMDLINE_LINUX='
+    line: 'GRUB_CMDLINE_LINUX="net.ifnames=0 biosdevname=0 scsi_mod.use_blk_mq=Y crashkernel=auto console=ttyS0,115200 ipv6.disable=1"'
+
+#/etc/ssh/sshd_config設定
+sshd_config_settings:
+  - regexp: '^#?PubkeyAuthentication'
+    line: 'PubkeyAuthentication yes'
+  - regexp: '^#?(UseDNS\s+no)'
+    line: 'UseDNS no'
+  - regexp: '^(PrintMotd\s+no)'
+    line: '# PrintMotd no'
+
+
+
+

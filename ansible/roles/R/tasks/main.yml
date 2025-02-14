@@ -1,0 +1,80 @@
+# 必要な依存関係をインストールする
+- name: 必要な依存関係をインストールする
+  ansible.builtin.dnf:
+    name:
+      - wget
+      # - gcc
+      # - gcc-c++
+      # - gcc-gfortran
+      # - readline-devel
+      # - libXt-devel
+      # - libcurl-devel
+      # - libjpeg-devel
+      # - libpng-devel
+      # - cairo-devel
+    state: present
+  become: yes
+
+- name: Install dependencies
+  dnf:
+    name: 
+      - wget
+      - xz-devel
+      - make
+      # - perl
+    state: present
+
+# R 3.4.0のソースコードをダウンロード
+- name: R 3.4.0のソースコードをダウンロード
+  ansible.builtin.get_url:
+    url: https://cran.r-project.org/src/base/R-3/R-3.4.0.tar.gz
+    dest: /home/ansible/R-3.4.0.tar.gz
+  become: yes
+
+# R 3.4.0のソースコードを展開
+- name: R 3.4.0のソースコードを展開
+  ansible.builtin.unarchive:
+    src: /home/ansible/R-3.4.0.tar.gz
+    dest: /home/ansible/
+    remote_src: yes
+  become: yes
+
+# R 3.4.0ディレクトリの権限を変更
+- name: R 3.4.0ディレクトリの権限を変更
+  ansible.builtin.command:
+    cmd: chown -R ansible:ansible /home/ansible/R-3.4.0
+  become: yes
+
+# R 3.4.0を構成する
+- name: R 3.4.0を構成する
+  ansible.builtin.command:
+    cmd: ./configure --enable-R-shlib
+    chdir: /home/ansible/R-3.4.0
+  become: yes
+
+# R 3.4.0をコンパイルする
+- name: R 3.4.0をコンパイルする
+  ansible.builtin.command:
+    cmd: make
+    chdir: /home/ansible/R-3.4.0
+  become: yes
+
+# R 3.4.0をインストールする
+- name: R 3.4.0をインストールする
+  ansible.builtin.command:
+    cmd: make install
+    chdir: /home/ansible/R-3.4.0
+  become: yes
+
+# Rのインストールを確認する
+- name: Rのインストールを確認する
+  ansible.builtin.command:
+    cmd: /usr/local/bin/R --version
+  register: r_version
+  become: yes
+
+# Rのバージョンを表示する
+- name: Rのバージョンを表示する
+  ansible.builtin.debug:
+    msg: "Rのバージョンは {{ r_version.stdout }} です。"
+

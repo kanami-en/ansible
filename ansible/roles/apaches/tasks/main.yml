@@ -1,0 +1,24 @@
+#Apache(httpd)のインストール
+- name: Apache(httpd)のインストール
+  ansible.builtin.package:
+    name: httpd
+    state: present
+  notify:
+    - restart httpd
+
+#httpdサービスをenabled・startedの状態にする
+- name: サービス起動確認
+  ansible.builtin.service:
+    name: httpd
+    state: started
+    enabled: yes
+
+# Apache HTTP Server (httpd)のバージョンを確認する
+- name: Apache HTTP Server (httpd)のバージョンを確認する
+  shell: httpd -v | grep version
+  register: httpd_version_output
+  ignore_errors: yes
+
+- debug:
+    msg: "Apache HTTP Server (httpd)のバージョンは {{ httpd_version_output.stdout }} です。"
+  when: httpd_version_output.rc == 0

@@ -1,0 +1,7 @@
+#chronydを再起動する
+- name: chronyd再起動
+  service:
+    name: chronyd
+    state: restarted
+
+

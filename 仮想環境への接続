@@ -1,0 +1,4 @@
+#Ansible実行環境への再接続 
+su - ansible && python3.9 -m venv venv 
+source ./venv/bin/activate && cd ./ansible-tutorial
+ansible --help

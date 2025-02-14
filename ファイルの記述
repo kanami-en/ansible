@@ -1,0 +1,48 @@
+#inventory.iniの作成
+vi inventory/inventory.ini
+
+[test servers]
+localhost
+
+[web_servers]
+web-01 ansible_host=118.27.118.109
+
+
+ansible test_servers \ -i inventory/inventory.ini -m ansible.builtin.setup
+
+ansible web_servers \ -i inventory/inventory.ini -m ansible.builtin.setup
+
+ansible web_servers \ -i inventory/inventory.ini -b -m ansible.builtin.user -a "name=user01 \ uid=1001"
+
+#.ansible.cfg作成
+cd ~
+
+sudo vi .ansible.cfg
+[defaults]
+
+log_path = $HOME/.ansible/ansible.cfg
+host_key_checking = False
+gathering = smart
+
+ansible --version
+
+#playbook.yml作成
+cd ~/ansible-tutorial
+sudo vi 
+
+---
+- name: Test playbook
+  hosts: test_servers
+  tasks:
+    - name: Check OS Family
+      ansible.builtin.debug:
+        var: ansible_os_family
+
+    - name: Check OS Version
+      ansible.builtin.command: cat /etc/redhat-release
+      when: ansible_os_family == "RedHat"
+
+
+ansible-playbook -i inventory/inventory.ini playbook.yml --check
+ansible-playbook -i inventory/inventory.ini playbook.yml -v
+ansible-playbook -i inventory/inventory.ini initial-setting.yml -v

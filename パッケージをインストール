@@ -1,0 +1,49 @@
+#管理サーバー
+sudo dnf install -y langpacks-ja \
+glibc-langpack-ja
+
+sudo localectl set-locale LANG=ja_JP.utf8
+sudo localectl status
+
+sudo dnf config-manager --set-enabled crb
+
+sudo dnf install -y epel-release
+
+sudo dnf groupinstall -y "Development Tools"
+
+sudo dnf install -y sshpass
+
+cd ~
+
+python3.9 -m venv venv
+source ~/venv/bin/activate
+
+pip install --upgrade pip
+pip install ansible==7.5.0
+ansible --help
+
+
+#ディレクトリ作成
+mkdir -vp \
+~/ansible-tutorial/{inventory,{group,host}_vars,roles}
+
+touch \
+~/ansible-tutorial/{inventory/inventory.ini,group_vars/all.yml}
+
+#roles作成
+mkdir -vp \
+~/ansible-tutorial/roles/application
+mkdir -vp \
+~/ansible-tutorial/roles/application/{defaults,files,handlers,meta}
+
+touch \
+~/ansible-tutorial/roles/application/{defaults/main.yml,files/main.yml,handlers/main.yml,meta/main.yml}
+
+
+mkdir -vp \
+~/ansible-tutorial/roles/common
+mkdir -vp \
+~/ansible-tutorial/roles/common/{defaults,files,handlers,meta,tasks,templates,tests,vars}
+
+touch \
+~/ansible-tutorial/roles/common/{defaults/main.yml,files/main.yml,handlers/main.yml,meta/main.yml}

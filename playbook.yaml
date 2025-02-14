@@ -1,0 +1,89 @@
+playbook.yml
+
+/Ansible/GCP-playbook
+   |- site.yml
+   |- hosts
+   |- roles
+       |- apache
+           |- tasks
+               |- main.yml
+
+
+mkdir -p /Ansible/GCP-playbook/roles/apache/tasks
+
+cd /GCP-playbook
+vi ansible.cfg
+
+[defaults]
+inventory = ./hosts
+roles_path = ./roles
+remote_user = ansibleuser
+private_key_file = /home/admin/.ssh/id_rsa
+
+vi hosts
+[servers]
+34.85.123.59
+[servers:vars]
+ansible_port=22
+ansible_ssh_user=ansibleuser
+ansible_ssh_private_key_file=/home/admin/.ssh/id_rsa
+---------------------
+[servers]
+auth-01 ansible_host=34.85.123.59
+
+
+[servers:vars]
+ansible_port=22
+ansible_ssh_user=ansibleuser
+ansible_ssh_private_key_file=/home/admin/.ssh/id_rsa
+------------------------------
+sudo vi site.yml
+
+- name: Install Apache
+  hosts: all
+  become: yes
+  roles:
+    - apache
+
+- name:  Start httpd Service
+  hosts: all
+  become: yes
+  roles:
+    - apache
+
+
+cd /GCP-playbook/roles/apache/tasks
+sudo vi main.yml
+
+- name: Install Apache
+  yum:
+    name: httpd
+    state: present
+
+- name: Start httpd Service
+  systemd:
+    name: httpd
+    state: started
+    enabled: yes
+           
+cd GCP-playbook/roles/tasks/
+    
+作成したplaybookの文法が正しいかどうかを確認
+ansible-playbook -i hosts site.yml[トップレベルのプレイブック] --syntax-check
+
+playbookで実行されるタスクを確認
+ansible-playbook -i inventory/hosts playbook.yml --check
+
+実行  
+ansible-playbook -i inventory/hosts playbook.yml
+
+Ansible実行時の詳細ログを出す
+ansible-playbook -i hosts hoge.yml -vvv
+
+
+
+
+
+
+
+  

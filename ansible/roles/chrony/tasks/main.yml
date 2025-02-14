@@ -1,0 +1,30 @@
+#chronyインストール
+- name: chronyインストール
+  package:
+    name: chrony
+    state: present
+  become: yes
+
+#/etc/sysconfig/chronydファイルの編集
+- name: /etc/sysconfig/chronydを変更
+  lineinfile:
+    path: /etc/sysconfig/chronyd
+    regexp: '^OPTIONS='
+    line: 'OPTIONS="-4"'
+    state: present
+  register: chronyd_changed
+
+#/etc/sysconfig/chronydファイルが変更された場合、サービス再起動する
+- name: chronydのサービス再起動
+  debug:
+    msg: "Changes were made to /etc/sysconfig/chronyd"
+  when: chronyd_changed.changed
+  notify: restart chronyd
+
+#chronyサービスをenabled・startedの状態にする
+- name: chronyサービス起動確認
+  service:
+    name: chronyd
+    state: started
+    enabled: yes
+  become: yes

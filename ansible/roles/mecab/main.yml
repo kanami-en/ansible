@@ -1,0 +1,117 @@
+# 踏み台サーバのホームディレクトリに事前インストール
+# #wget 'https://drive.google.com/uc?export=download&id=0B4y35FiV1wh7cENtOXlicTFaRUE' -O mecab-0.996.tar.gz
+# #wget 'https://drive.google.com/uc?export=download&id=0B4y35FiV1wh7MWVlSDBCSXZMTXM' -O mecab-ipadic-2.7.0-20070801.tar.gz
+
+
+# MeCabのビルド依存関係をインストール
+- name: MeCabのビルド依存関係をインストール
+  yum:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - gcc
+    - make
+    - automake
+    - autoconf
+    - libtool
+    - zlib-devel
+    - bzip2-devel
+    - openssl-devel
+    - ncurses-devel
+
+- name: MeCabのインストール用ディレクトリを作成
+  file:
+    path: /opt/mecab/bin
+    state: directory
+  become: yes
+
+- name: IPAdic辞書のインストール用ディレクトリを作成
+  file:
+    path: /opt/mecab/lib/mecab/dic/ipadic
+    state: directory
+  become: yes
+
+- name: MeCabのソースファイルをクライアントサーバーにコピー
+  ansible.builtin.copy:
+    src: "{{ lookup('env', 'HOME') }}/mecab-0.996.tar.gz"
+    dest: "/home/comsysadmin/mecab-0.996.tar.gz"
+
+- name: IPAdicのソースファイルをクライアントサーバーにコピー
+  ansible.builtin.copy:
+    src: "{{ lookup('env', 'HOME') }}/mecab-ipadic-2.7.0-20070801.tar.gz"
+    dest: "/home/comsysadmin/mecab-ipadic-2.7.0-20070801.tar.gz"
+
+- name: MeCabのソースファイルを展開
+  ansible.builtin.unarchive:
+    src: "/home/comsysadmin/mecab-0.996.tar.gz"
+    dest: "/home/comsysadmin/"
+    remote_src: yes
+
+- name: MeCabの設定
+  command: ./configure --prefix=/opt/mecab --with-charset=utf8 --enable-utf8-only
+  args:
+    chdir: /home/comsysadmin/mecab-0.996
+  environment:
+    PATH: "/opt/mecab/bin:{{ ansible_env.PATH }}"
+  become: yes
+  
+- name: MeCabをコンパイルしてインストール
+  ansible.builtin.shell:
+    cmd: |
+      make
+      make install
+  args:
+    chdir: /home/comsysadmin/mecab-0.996
+  become: yes
+
+- name: IPAdicを展開
+  ansible.builtin.unarchive:
+    src: "/home/comsysadmin/mecab-ipadic-2.7.0-20070801.tar.gz"
+    dest: "/home/comsysadmin/"
+    remote_src: yes
+
+- name: IPAdicの設定
+  command: ./configure --with-mecab-config=/opt/mecab/bin/mecab-config --with-charset=utf8
+  args:
+    chdir: /home/comsysadmin/mecab-ipadic-2.7.0-20070801
+  environment:
+    PATH: "/opt/mecab/bin:{{ ansible_env.PATH }}"
+  become: yes
+
+- name: IPAdicをコンパイルしてインストール
+  ansible.builtin.shell:
+    cmd: |
+      make
+      make install
+  args:
+    chdir: /home/comsysadmin/mecab-ipadic-2.7.0-20070801
+  become: yes
+
+- name: MeCab環境設定スクリプトの作成
+  ansible.builtin.copy:
+    dest: /etc/profile.d/mecab.sh
+    content: |
+      export PATH=$PATH:/opt/mecab/bin
+  become: yes
+
+- name: MeCab環境設定スクリプトの作成
+  ansible.builtin.shell:
+    cmd: echo 'export PATH=$PATH:/opt/mecab/bin' | sudo tee /etc/profile.d/mecab.sh
+  become: yes
+
+- name: MeCab環境設定スクリプトの適用
+  ansible.builtin.shell:
+    cmd: source /etc/profile.d/mecab.sh
+  become: yes
+
+- name: mecab-ipadicディレクトリとtarballの削除
+  file:
+    path: /home/comsysadmin/mecab-ipadic-2.7.0-20070801
+    state: absent
+  become: yes
+
+- name: mecab tarballの削除
+  file:
+    path: /home/comsysadmin/mecab-0.996.tar.gz
+    state: absent
+  become: yes

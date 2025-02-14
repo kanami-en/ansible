@@ -1,0 +1,27 @@
+# NFSユーティリティをインストール
+- name: NFSユーティリティをインストール
+  dnf:
+    name: nfs-utils
+    state: present
+  become: yes
+
+# NFSサーバーを有効化
+- name: NFSサーバーを有効化
+  systemd:
+    name: nfs-server
+    enabled: yes
+  become: yes
+
+# NFSサーバーを起動
+- name: NFSサーバーを起動
+  systemd:
+    name: nfs-server
+    state: started
+  become: yes
+
+# NFSサーバーを再起動
+- name: NFSサーバーを再起動
+  systemd:
+    name: nfs-server
+    state: restarted
+  become: yes

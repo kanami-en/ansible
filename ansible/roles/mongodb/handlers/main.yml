@@ -1,0 +1,7 @@
+---
+# MongoDB サービスを再起動する
+- name: MongoDB再起動
+  ansible.builtin.service:
+    name: mongod
+    state: restarted
+

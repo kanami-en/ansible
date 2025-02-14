@@ -1,0 +1,9 @@
+---
+#タイムゾーン
+local_timezone: "Asia/Tokyo"
+#ロケール
+local_locale: "ja_JP.UTF-8"
+locale_keymap: "jp106"
+
+#インターフェース名を指定
+iif: "Wired connection 1"
